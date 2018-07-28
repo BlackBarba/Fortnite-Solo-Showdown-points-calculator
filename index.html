@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Fortnite Solo Showdown points calculator</title>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta http-equiv="content-language" content="en">
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
+</head>
+<body>
+	<div id="app">
+		<div class="container" style="margin-top: 30px;">
+			<div class="columns">
+				<div class="column">
+					<form @submit.prevent="submit">
+						<label class="label">
+							Add match
+						</label>
+						<div class="field has-addons">
+							<div class="control is-expanded">
+								<input v-model="place" class="input" type="number" min="1" max="100" placeholder="Place" required ref="placeInput">
+							</div>
+							<div class="control is-expanded">
+								<input v-model="eliminations" class="input" type="number" min="0" max="100" placeholder="Eliminations" required>
+							</div>
+							<div class="control">
+								<button type="submit" class="button is-success">
+									Save
+								</button>
+							</div>
+						</div>
+					</form>
+				</div>
+				<div class="column">
+					<label class="label">
+						&nbsp;
+					</label>
+
+					<div class="field is-grouped is-pulled-right">
+						<div class="control">
+							<button @click="reset()" type="button" class="button is-danger">
+								Clear data
+							</button>
+						</div>
+
+						<div class="control">
+							<div class="file is-info">
+								<label class="file-label">
+									<input class="file-input" type="file" ref="inputFile" @change="handleFile">
+									<span class="file-cta">
+										<span class="file-label">
+											Import data
+										</span>
+									</span>
+								</label>
+							</div>
+						</div>
+
+						<div class="control">
+							<a :href="downloadableJson" class="button is-link" download="data.json">
+								Export data
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="columns">
+				<div class="column">
+					<table class="table is-bordered is-striped is-fullwidth">
+						<thead>
+							<tr>
+								<th class="has-text-centered">
+									Victories
+								</th>
+								<th class="has-text-centered">
+									Times in the top 10
+								</th>
+								<th class="has-text-centered">
+									Times in the 25
+								</th>
+								<th class="has-text-centered">
+									Total matches
+								</th>
+								<th class="has-text-centered">
+									Total eliminations
+								</th>
+								<th class="has-text-centered">
+									Total of points
+								</th>
+							</tr>
+						</thead>
+						<tr>
+							<td class="has-text-centered">
+								{{ getTotalMatchesBetween(1,1) }}
+							</td>
+							<td class="has-text-centered">
+								{{ getTotalMatchesBetween(1,10) }}
+							</td>
+							<td class="has-text-centered">
+								{{ getTotalMatchesBetween(1,25) }}
+							</td>
+							<td class="has-text-centered">
+								{{ matches.length }}
+							</td>
+							<td class="has-text-centered">
+								{{ getTotalPoints() }}
+							</td>
+							<td class="has-text-centered">
+								{{ getTotalPoints() }}
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			<div class="columns">
+				<div class="column">
+					<table class="table is-bordered is-striped is-fullwidth">
+						<thead>
+							<tr>
+								<th class="has-text-centered">
+									Placement
+								</th>
+								<th class="has-text-centered">
+									Placement points
+								</th>
+								<th class="has-text-centered">
+									Eliminations
+								</th>
+								<th class="has-text-centered">
+									Eliminations points
+								</th>
+								<th class="has-text-centered">
+									Total
+								</th>
+							</tr>
+						</thead>
+						<tr v-for="match in matches">
+							<td class="has-text-centered">
+								{{ match.place }}
+							</td>
+							<td class="has-text-centered">
+								{{ getMatchPlacementScore(match.place) }}
+							</td>
+							<td class="has-text-centered">
+								{{ match.eliminations }}
+							</td>
+							<td class="has-text-centered">
+								{{ getMatchEliminationsScore(match.eliminations) }}
+							</td>
+							<td class="has-text-centered">
+								{{ getMatchScore(match) }}
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		var app = new Vue({
+			el: '#app',
+			mounted () {
+				this.matches = this.getMatches();
+			},
+			computed: {
+				downloadableJson: function () {
+					return 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(this.matches));
+				}
+			},
+			methods: {
+				getMatchScore (match) {
+					return this.getMatchPlacementScore(match.place) + this.getMatchEliminationsScore(match.eliminations);
+				},
+				
+				getMatchPlacementScore (place) {
+					return this.punctuation.find((points) => {
+						return place >= points.min && place <= points.max;
+					}).points;
+				},
+				
+				getMatchEliminationsScore (eliminations) {
+					return eliminations * this.eliminationMultiplier;
+				},
+				
+				getTotalPoints () {
+					let total = 0;
+					for (var i = 0; i < this.matches.length; i++) {
+						total += this.getMatchScore(this.matches[i]);
+					}
+					return total;
+				},
+				
+				getTotalMatchesBetween (min, max) {
+					return this.matches.filter(match => match.place >= min && match.place <= max).length;
+				},
+				
+				getMatches () {
+					return localStorage.matches ? JSON.parse(localStorage.matches) : [];
+				},
+				
+				setMatches (matches) {
+					localStorage.matches = JSON.stringify(matches);
+					this.matches = matches;
+				},
+				
+				validateInput (value, min = 1, max = 100) {
+					return !(value < min || value > max || value == null);
+				},
+				
+				handleFile () {
+					let file = this.$refs.inputFile.files[0],
+						extension = file.name.substr((file.name.lastIndexOf('.') + 1)),
+						reader = new FileReader();
+
+					if (extension != 'json') {
+						alert('Are you a noob? The file must be a json!');
+					}
+
+					reader.onload = (e) => {
+						this.setMatches(JSON.parse(e.target.result));
+					}
+
+					reader.onerror = (error) => {
+						alert('An error ocour. Contact the support llama for more assistance.');
+					};
+
+					reader.readAsText(file);
+				},
+
+				submit () {
+					if (!this.validateInput(this.place) || !this.validateInput(this.eliminations, 0)) {
+						return;
+					}
+
+					let matches = this.getMatches();
+					matches.push({
+						place: this.place,
+						eliminations: this.eliminations
+					});
+					
+					this.place = null;
+					this.eliminations = null;
+					this.setMatches(matches);
+
+					this.$refs.placeInput.focus();
+				},
+				reset () {
+					if (confirm('Are you sure about this?')) {
+						this.setMatches([]);
+					}
+				}
+			},
+			data: {
+				punctuation: [
+					{
+						min: 1,
+						max: 1,
+						points: 100
+					},
+					{
+						min: 2,
+						max: 2,
+						points: 94
+					},
+					{
+						min: 3,
+						max: 3,
+						points: 91
+					},
+					{
+						min: 4,
+						max: 4,
+						points: 88
+					},
+					{
+						min: 5,
+						max: 5,
+						points: 85
+					},
+					{
+						min: 6,
+						max: 6,
+						points: 80
+					},
+					{
+						min: 7,
+						max: 7,
+						points: 75
+					},
+					{
+						min: 8,
+						max: 8,
+						points: 70
+					},
+					{
+						min: 9,
+						max: 9,
+						points: 65
+					},
+					{
+						min: 10,
+						max: 10,
+						points: 60
+					},
+					{
+						min: 11,
+						max: 15,
+						points: 55
+					},
+					{
+						min: 16,
+						max: 20,
+						points: 50
+					},
+					{
+						min: 21,
+						max: 30,
+						points: 45
+					},
+					{
+						min: 31,
+						max: 40,
+						points: 40
+					},
+					{
+						min: 41,
+						max: 50,
+						points: 35
+					},
+					{
+						min: 51,
+						max: 75,
+						points: 30
+					},
+					{
+						min: 76,
+						max: 100,
+						points: 25
+					},
+				],
+				matches: [],
+				place: null,
+				eliminations: null,
+				eliminationMultiplier: 6,
+			}
+		})
+	</script>
+</body>
+</html>
