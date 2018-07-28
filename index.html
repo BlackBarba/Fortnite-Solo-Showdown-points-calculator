@@ -135,7 +135,7 @@
 								{{ matches.length }}
 							</td>
 							<td class="has-text-centered">
-								{{ getTotalPoints() }}
+								{{ getTotalEliminations() }}
 							</td>
 							<td class="has-text-centered">
 								{{ getTotalPoints() }}
@@ -216,11 +216,11 @@
 				},
 				
 				getTotalPoints () {
-					let total = 0;
-					for (var i = 0; i < this.matches.length; i++) {
-						total += this.getMatchScore(this.matches[i]);
-					}
-					return total;
+					return this.matches.reduce((total, match) => total + this.getMatchScore(match), 0);
+				},
+
+				getTotalEliminations () {
+					return this.matches.reduce((total, match) => total + parseInt(match.eliminations), 0);
 				},
 				
 				getTotalMatchesBetween (min, max) {
