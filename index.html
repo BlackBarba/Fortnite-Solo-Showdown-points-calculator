@@ -9,10 +9,21 @@
 
 	<script src="https://cdn.jsdelivr.net/npm/vue"></script>
 	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
 </head>
 <body>
 	<div id="app">
 		<div class="container" style="margin-top: 30px;">
+			<div class="columns">
+				<div class="column">
+					<a href="https://github.com/BlackBarba/Fortnite-Solo-Showdown-points-calculator" class="button is-pulled-right">
+						<span class="icon">
+							<i class="fab fa-github"></i>
+						</span>
+						<span>GitHub</span>
+					</a>
+				</div>
+			</div>
 			<div class="columns">
 				<div class="column">
 					<form @submit.prevent="submit">
@@ -28,7 +39,12 @@
 							</div>
 							<div class="control">
 								<button type="submit" class="button is-success">
-									Save
+									<span class="icon is-small">
+										<i class="fas fa-check"></i>
+									</span>
+									<span>
+										Save
+									</span>
 								</button>
 							</div>
 						</div>
@@ -42,7 +58,12 @@
 					<div class="field is-grouped is-pulled-right">
 						<div class="control">
 							<button @click="reset()" type="button" class="button is-danger">
-								Clear data
+								<span class="icon is-small">
+									<i class="fas fa-trash"></i>
+								</span>
+								<span>
+									Clear data
+								</span>
 							</button>
 						</div>
 
@@ -51,6 +72,9 @@
 								<label class="file-label">
 									<input class="file-input" type="file" ref="inputFile" @change="handleFile">
 									<span class="file-cta">
+										<span class="file-icon">
+											<i class="fas fa-upload"></i>
+										</span>
 										<span class="file-label">
 											Import data
 										</span>
@@ -61,7 +85,12 @@
 
 						<div class="control">
 							<a :href="downloadableJson" class="button is-link" download="data.json">
-								Export data
+								<span class="icon is-small">
+									<i class="fas fa-download"></i>
+								</span>
+								<span>
+									Export data
+								</span>
 							</a>
 						</div>
 					</div>
@@ -79,7 +108,7 @@
 									Times in the top 10
 								</th>
 								<th class="has-text-centered">
-									Times in the 25
+									Times in the top 25
 								</th>
 								<th class="has-text-centered">
 									Total matches
